@@ -1,1 +1,3 @@
-export * from './publish'
+const publish = require('./publish')
+
+exports.publish = publish
