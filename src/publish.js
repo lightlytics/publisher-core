@@ -1,7 +1,7 @@
 import got from 'got'
 import fs from 'fs'
 import path from 'path'
-import {localsCollector} from "./scanners/locals_collector.js"
+import {localsScanner} from "./scanners/locals_scanner.js"
 import * as constants from './constants.js'
 
 export async function publish({apiUrl, tfWorkingDir, tfPlan, tfGraph, collectionToken, metadata}) {
@@ -47,7 +47,7 @@ export async function publish({apiUrl, tfWorkingDir, tfPlan, tfGraph, collection
           return innerAddData
         }
 
-        const localsProcessor = localsCollector(addData('locals'))
+        const localsProcessor = localsScanner(addData('locals'))
 
         moduleContent.split("\n").forEach((line) => {
           localsProcessor(line)
