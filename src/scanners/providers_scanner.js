@@ -14,7 +14,7 @@ export function providersScanner(addData) {
     }
 
     else if (blockCnt > 0 && sanitizedLine.includes("{")){
-      blockCnt++;
+      blockCnt+=(sanitizedLine.match(/{/g) || []).length;
     }
 
     if (blockCnt > 0 && sanitizedLine.startsWith("providers = {")) {
@@ -27,7 +27,7 @@ export function providersScanner(addData) {
     }
 
     if (blockCnt > 0 && sanitizedLine.includes("}")) {
-      blockCnt--;
+      blockCnt-=(sanitizedLine.match(/}/g) || []).length;
       providers = false
       if (blockCnt === 0 &&  providersBlockLines) {
         const output = {}

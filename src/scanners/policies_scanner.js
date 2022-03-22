@@ -15,7 +15,7 @@ export function policiesScanner(addData) {
       }
 
       else if (blockCnt > 0 && sanitizedLine.includes("{")){
-        blockCnt++;
+        blockCnt+=(sanitizedLine.match(/{/g) || []).length;
       }
   
       if (blockCnt > 0 && sanitizedLine.includes("policy =")) {
@@ -27,7 +27,7 @@ export function policiesScanner(addData) {
       }
   
       if (blockCnt > 0 && sanitizedLine.includes("}")) {
-        blockCnt--;
+        blockCnt-=(sanitizedLine.match(/}/g) || []).length;
         if (policy && blockCnt === 1){
             policy = false
         }
