@@ -9,9 +9,11 @@ export function policiesScanner(addData) {
       if (sanitizedLine.startsWith("#")) return;
   
       if (sanitizedLine.startsWith("resource")) {
-        const splittedLine =  sanitizedLine.split(/["]/)
-        resourceName = splittedLine[1].concat(".", splittedLine[3])
-        blockCnt = 1;
+        const splittedLine =  sanitizedLine.split('"')
+        if(splittedLine.length > 3) {
+          resourceName = `${splittedLine[1]}.${splittedLine[3]}`
+          blockCnt = 1;
+        }
       }
 
       else if (blockCnt > 0 && sanitizedLine.includes("{")){
@@ -32,9 +34,7 @@ export function policiesScanner(addData) {
             policy = false
         }
         if (blockCnt === 0 && policyBlockLines) {
-          const output = {}
-          output[resourceName] = policyBlockLines
-          addData(output);
+          addData({[resourceName]: policyBlockLines})
         }
       }
     }

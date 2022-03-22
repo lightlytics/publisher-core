@@ -30,9 +30,7 @@ export function providersScanner(addData) {
       blockCnt-=(sanitizedLine.match(/}/g) || []).length;
       providers = false
       if (blockCnt === 0 &&  providersBlockLines) {
-        const output = {}
-        output[moduleName] = providersBlockLines
-        addData(output);
+        addData({[moduleName]: providersBlockLines})
       }
     }
   }
