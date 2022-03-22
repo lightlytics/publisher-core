@@ -2,6 +2,8 @@ import got from 'got'
 import fs from 'fs'
 import path from 'path'
 import {localsScanner} from "./scanners/locals_scanner.js"
+import {providersScanner} from "./scanners/providers_scanner.js"
+import {policiesScanner} from "./scanners/policies_scanner.js"
 import * as constants from './constants.js'
 
 export async function publish({apiUrl, tfWorkingDir, tfPlan, tfGraph, collectionToken, metadata}) {
@@ -12,7 +14,7 @@ export async function publish({apiUrl, tfWorkingDir, tfPlan, tfGraph, collection
   if (fs.existsSync(modulesPath)) {
     modules = JSON.parse(fs.readFileSync(modulesPath, "utf8"));
   }
-  const locals = {};
+  const parsedHcl = {};
 
   if (!modules.Modules)
     modules["Modules"] = [];
@@ -33,24 +35,45 @@ export async function publish({apiUrl, tfWorkingDir, tfPlan, tfGraph, collection
         const filePath = `${workingDir}/${module.Dir}/${fileName}`;
         const moduleContent = fs.readFileSync(filePath, "utf8");
 
-        function addData(type) {
+        function addData(HclArg, type) {
           function innerAddData(data) {
-            if (!locals[type]) {
-              locals[type] = {}
+            if (!parsedHcl[HclArg]) {
+              parsedHcl[HclArg] = {}
             }
-            if (!locals[type][module.Source]) {
-              locals[type][module.Source] = []
+            if (!parsedHcl[HclArg][module.Source]) {
+              switch (type) {
+                case 'object':
+                  parsedHcl[HclArg][module.Source] = {}
+                  break;
+                case 'array':
+                  parsedHcl[HclArg][module.Source] = []
+                  break
+              }
             }
-
-            locals[type][module.Source].push(data);
+      
+            switch (type) {
+              case 'object':
+                parsedHcl[HclArg][module.Source] = {
+                  ...parsedHcl[HclArg][module.Source],
+                  ...data
+                }
+                break;
+              case 'array':
+                parsedHcl[HclArg][module.Source].push(data);
+                break
+            }
           }
           return innerAddData
         }
-
-        const localsProcessor = localsScanner(addData('locals'))
+      
+        const localsProcessor = localsScanner(addData('locals', 'array'))
+        const providersProcessor = providersScanner(addData('providers', 'object'))
+        const policiesProccessor = policiesScanner(addData('policies', 'object'))
 
         moduleContent.split("\n").forEach((line) => {
           localsProcessor(line)
+          providersProcessor(line)
+          policiesProccessor(line)
         })
       });
     });
@@ -65,10 +88,10 @@ export async function publish({apiUrl, tfWorkingDir, tfPlan, tfGraph, collection
   const publishUrl = `https://${apiUrl}${constants.PublishEndpoint}`
   const headers = {
     [constants.LightlyticsTokenKey]: collectionToken
-  }
+  } 
 
   const data = {
-    modules,
+    parsedHcl,
     plan,
     graph,
     metadata,
