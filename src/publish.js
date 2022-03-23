@@ -107,7 +107,7 @@ export async function publish({
   };
 
   const data = {
-    parsedHcl,
+    parsed_hcl: parsedHcl,
     plan,
     graph,
     metadata,
