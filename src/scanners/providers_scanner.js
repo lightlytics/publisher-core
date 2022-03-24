@@ -10,7 +10,7 @@ export function providersScanner(addData) {
     if (sanitizedLine.startsWith("#")) return;
 
     // find module block and count it. increase the block counter each { occurrence
-    if (sanitizedLine.startsWith("module ")) {
+    if (sanitizedLine.startsWith('module "')) {
       moduleName = sanitizedLine.match(/"([^"]+)"/)[1];
       blockCnt = 1;
     } else if (blockCnt > 0 && sanitizedLine.includes("{")) {
