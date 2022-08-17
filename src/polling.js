@@ -16,6 +16,7 @@ export async function poll({
   }
 
   let pollCount = 0
+  let lastStatus = ""
   while (pollCount < (pollTimeout * 60 * 1000) / pollInterval) {
     await new Promise(resolve => setTimeout(resolve, pollInterval))
     pollCount++
@@ -35,7 +36,10 @@ export async function poll({
       status.status = 'completed'
     }
 
-    onStatusUpdate(status, markdownOutput)
+    if (lastStatus !== response.body?.status) {
+      lastStatus = response.body?.status
+      onStatusUpdate(status, markdownOutput)
+    }
 
     if (status.conclusion) {
       break
