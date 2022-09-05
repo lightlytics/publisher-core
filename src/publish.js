@@ -12,6 +12,8 @@ export async function publish({
                                 tfPlan,
                                 tfGraph,
                                 collectionToken,
+                                tfcToken,
+                                tfcRunId,
                                 metadata,
                               }) {
   const workingDir = tfWorkingDir.replace(/\/$/, "");
@@ -104,7 +106,23 @@ export async function publish({
       );
     });
 
-  const plan = JSON.parse(fs.readFileSync(tfPlan, "utf8"));
+  let plan
+  if (tfPlan && fs.existsSync(tfPlan)) {
+    plan = JSON.parse(fs.readFileSync(tfPlan, "utf8"));
+  } else if (tfcToken && tfcRunId) {
+    const headers = {
+      Authorization: `Bearer ${tfcToken}`
+    }
+    const runInfo = await got.get(`https://app.terraform.io/api/v2/runs/${tfcRunId}`, {headers}).catch(e => console.error(e))
+    const planId = JSON.parse(runInfo?.body || '{}')?.data?.relationships?.plan?.data?.id
+    if (!planId)
+      throw 'Missing plan ID from TFC'
+
+    const planResponse = await got.get(`https://app.terraform.io/api/v2/plans/${planId}/json-output`, {headers})
+    plan = JSON.parse(planResponse?.body || '{}')
+  } else {
+    throw 'TF Plan is missing.'
+  }
   removeAwsCredentials(plan);
   let graph;
   if (tfGraph) {
