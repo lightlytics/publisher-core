@@ -125,8 +125,10 @@ export async function publish({
   }
   removeAwsCredentials(plan);
   let graph;
-  if (tfGraph) {
+  if (tfGraph && fs.existsSync(tfGraph)) {
     graph = fs.readFileSync(tfGraph, "utf8");
+  } else {
+    console.warn("Warning: no valid TF graph file specified")
   }
 
   const publishUrl = `https://${apiUrl}${constants.PublishEndpoint}`;
