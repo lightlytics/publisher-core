@@ -19,7 +19,7 @@ export function policiesScanner(addData) {
     }
 
     // find the policy block and add the block lines to the policyBlockLines
-    if (blockCnt > 0 && sanitizedLine.includes("policy =")) {
+    if (blockCnt > 0 && sanitizedLine.includes("policy =") || sanitizedLine.includes("statement {")) {
       policy = true;
     }
 
@@ -36,6 +36,7 @@ export function policiesScanner(addData) {
       }
       if (blockCnt === 0 && policyBlockLines) {
         addData({ [resourceName]: policyBlockLines });
+        policy = false
         policyBlockLines = "";
       }
     }
