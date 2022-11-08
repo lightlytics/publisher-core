@@ -8,7 +8,7 @@ export function policiesScanner(addData) {
     const sanitizedLine = String(line).trim();
 
     // find resource block and count it. increase the block counter each { occurrence
-    if (sanitizedLine.startsWith("resource")) {
+    if (sanitizedLine.startsWith("resource") || sanitizedLine.startsWith("data")) {
       const splittedLine = sanitizedLine.split('"');
       if (splittedLine.length > 3) {
         resourceName = `${splittedLine[1]}.${splittedLine[3]}`;
