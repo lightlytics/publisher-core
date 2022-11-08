@@ -18,6 +18,6 @@
   },
   "homepage": "https://github.com/lightlytics/publisher-core#readme",
   "dependencies": {
-    "got": "^12.0.1"
+    "got": "^12.5.2"
   }
 }
