@@ -36,7 +36,7 @@ export function policiesScanner(addData) {
       }
       if (blockCnt === 0 && policyBlockLines) {
         addData({ [resourceName]: policyBlockLines });
-        policy = false
+        policy = false;
         policyBlockLines = "";
       }
     }
