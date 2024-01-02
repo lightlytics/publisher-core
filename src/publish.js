@@ -1,21 +1,22 @@
 import got from "got";
 import fs from "fs";
 import path from "path";
-import {localsScanner} from "./scanners/locals_scanner.js";
-import {providersScanner} from "./scanners/providers_scanner.js";
-import {policiesScanner} from "./scanners/policies_scanner.js";
+import { localsScanner } from "./scanners/locals_scanner.js";
+import { providersScanner } from "./scanners/providers_scanner.js";
+import { policiesScanner } from "./scanners/policies_scanner.js";
+import { cidrBlocksScanner } from "./scanners/cidr_blocks_scanner.js"
 import * as constants from "./constants.js";
 
 export async function publish({
-                                apiUrl,
-                                tfWorkingDir,
-                                tfPlan,
-                                tfGraph,
-                                collectionToken,
-                                tfcToken,
-                                tfcRunId,
-                                metadata,
-                              }) {
+  apiUrl,
+  tfWorkingDir,
+  tfPlan,
+  tfGraph,
+  collectionToken,
+  tfcToken,
+  tfcRunId,
+  metadata,
+}) {
   const workingDir = tfWorkingDir.replace(/\/$/, "");
 
   const modulesPath = path.normalize(
@@ -87,8 +88,11 @@ export async function publish({
           const policiesProcessor = policiesScanner(
             addData("policies", "object")
           );
+          const cidrsBlocksProcessor = cidrBlocksScanner(
+            addData("cidr_blocks", "object")
+          );
 
-          moduleContent.split("\n").forEach((line, index, {length}) => {
+          moduleContent.split("\n").forEach((line, index, { length }) => {
             // ignore comments
             const sanitizedLine = String(line).trim();
             if (sanitizedLine.startsWith("#")) return;
@@ -101,6 +105,8 @@ export async function publish({
             localsProcessor(line);
             providersProcessor(line);
             policiesProcessor(line);
+            cidrsBlocksProcessor(line);
+
           });
         }
       );
@@ -113,12 +119,12 @@ export async function publish({
     const headers = {
       Authorization: `Bearer ${tfcToken}`
     }
-    const runInfo = await got.get(`https://app.terraform.io/api/v2/runs/${tfcRunId}`, {headers}).catch(e => console.error(e))
+    const runInfo = await got.get(`https://app.terraform.io/api/v2/runs/${tfcRunId}`, { headers }).catch(e => console.error(e))
     const planId = JSON.parse(runInfo?.body || '{}')?.data?.relationships?.plan?.data?.id
     if (!planId)
       throw 'Missing plan ID from TFC'
 
-    const planResponse = await got.get(`https://app.terraform.io/api/v2/plans/${planId}/json-output`, {headers})
+    const planResponse = await got.get(`https://app.terraform.io/api/v2/plans/${planId}/json-output`, { headers })
     plan = JSON.parse(planResponse?.body || '{}')
   } else {
     throw 'TF Plan is missing.'
@@ -152,7 +158,7 @@ export async function publish({
   const eventId = response.body.eventId;
   const customerId = response.body.customerId;
 
-  return {eventId, customerId};
+  return { eventId, customerId };
 }
 
 function removeAwsCredentials(plan) {
@@ -165,9 +171,9 @@ function removeAwsCredentials(plan) {
   ) {
     delete plan["configuration"]["provider_config"]["aws"]["expressions"][
       "access_key"
-      ];
+    ];
     delete plan["configuration"]["provider_config"]["aws"]["expressions"][
       "secret_key"
-      ];
+    ];
   }
 }
