@@ -72,9 +72,9 @@ function severityToString(severity = 1) {
     case 3:
       return 'High'
     case 2:
-      return 'Warning'
+      return 'Medium'
     case 1:
-      return 'Info'
+      return 'Low'
   }
   return 'Info'
 }
